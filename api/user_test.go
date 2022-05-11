@@ -1,18 +1,41 @@
 package api
 
 import (
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strings"
 	"testing"
 )
+
+func (mock *MockHTTP) Do(req *http.Request) (*http.Response, error) {
+	return mock.response, mock.err
+}
+
+type MockHTTP struct {
+	response *http.Response
+	err      error
+}
 
 func TestGetRandomUser(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
 
 	w := httptest.NewRecorder()
 
-	GetRandomUser(w, r)
+	res := http.Response{
+		Body: ioutil.NopCloser(strings.NewReader("")),
+	}
+
+	mock := MockHTTP{
+		response: &res,
+	}
+
+	service := Service{
+		HTTPClient: &mock,
+	}
+
+	service.GetRandomUser(w, r)
 
 	got := w.Result()
 
